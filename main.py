@@ -9,7 +9,7 @@ ALLOWED_DOCUMENTS = {'txt', 'pdf'}
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
-app.config['UPLOADED_PHOTOS_DEST'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -27,12 +27,27 @@ def upload_file():
             filename = secure_filename(file.filename)
             folder_type = file_type(file.filename)
             
-            file.save(os.path.join(app.config['UPLOADED_PHOTOS_DEST']+folder_type, filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER']+folder_type, filename))
 
             success = True
         else:
             errors[file.filename] = 'File type is not allowed'
     
+
+    return jsonify({'message' : 'it worked'})
+
+@app.route('/delete', methods=['DELETE'])
+def delete_file():
+    print(request.form['file_id'])
+
+    if (request.form['file_id']):
+        try:
+            filename = request.form['file_id']
+            folder_type = file_type(filename)
+            os.remove(app.config['UPLOAD_FOLDER']+folder_type+'/'+request.form['file_id'])
+            return jsonify({'message': 'Image deleted successfully'})
+        except OSError:
+            return jsonify({'error': 'Image not found'}), 404
 
     return jsonify({'message' : 'it worked'})
 
