@@ -1,0 +1,7 @@
+docker==5.0.3
+docker-compose==1.29.2
+dockerpty==0.4.1
+Flask==2.3.1
+pyngrok==6.0.0
+Werkzeug==2.3.2
+mysql-connector-python
