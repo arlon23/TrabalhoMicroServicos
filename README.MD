@@ -1,19 +1,29 @@
-Procedimentos Linux/WSL
+# Trabalho de Microsserviços
 
-Verificar se possui python3 instalado
+## Instalação Linux/WSL
 
-instalar python pip: sudo apt install python3-pip
+Abra um terminal Linux/WSL e execute os seguintes comandos:
 
-instalar flask: pip install flask
+```bash
+sudo apt-get update
+sudo apt install python3
+sudo apt install python3-pip
+pip install flask
+pip install -U Werkzeug
+```
 
-instalar pacote Werkzeug: pip install -U Werkzeug
+Para poder fazer o upload dos documentos é preciso criar as pastas uploads na raiz do projeto, e as pastas images e documents dentro da pasta uploads
 
-
-Para poder fazer o upload dos documento é preciso criar as pastas uploads na raiz do projeto, e as pastas images e documents dentro da pasta uploads
-
+```terminal
 uploads
     images
     documents
+```
 
+## Executar o projeto
 
-Para rodar o projeto basta rodar o comando: python3 main.py
+Para rodar o projeto basta rodar o comando:
+
+```bash
+python3 main.py
+```
