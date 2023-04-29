@@ -1,6 +1,19 @@
 from flask import *
 from werkzeug.utils import secure_filename
 import json, time, os
+import mysql.connector
+
+# mydb = mysql.connector.connect(
+#   host="localhost",
+#   user="arlon",
+#   password="",
+#   database="file-api"
+# )
+
+# mycursor = mydb.cursor()
+
+
+# mydb.close()
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -13,8 +26,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    print('request')
-    print(request.files)
+
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="arlon",
+        password="",
+        database="file-api"
+    )
+    mycursor = mydb.cursor()
+
     if 'files' not in request.files:
         resp = jsonify({'message' : 'No file part in the request'})
         resp.status_code = 400
@@ -25,14 +45,25 @@ def upload_file():
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            folder_type = file_type(file.filename)
+
+            folder_type = file_type(filename)
             
             file.save(os.path.join(app.config['UPLOAD_FOLDER']+folder_type, filename))
+
+            sql = "INSERT INTO files (post_id,path,filename) VALUES (%s, %s, %s)"
+            val = (request.form['post_id'], app.config['UPLOAD_FOLDER']+folder_type, filename)
+
+            mycursor.execute(sql, val)
+
+            mydb.commit()
+
+            print("The ID of the last inserted row is:", mycursor.lastrowid)
 
             success = True
         else:
             errors[file.filename] = 'File type is not allowed'
-    
+
+    mydb.close()
 
     return jsonify({'message' : 'it worked'})
 
@@ -42,9 +73,27 @@ def delete_file():
 
     if (request.form['file_id']):
         try:
-            filename = request.form['file_id']
-            folder_type = file_type(filename)
-            os.remove(app.config['UPLOAD_FOLDER']+folder_type+'/'+request.form['file_id'])
+            mydb = mysql.connector.connect(
+                host="localhost",
+                user="arlon",
+                password="",
+                database="file-api"
+            )
+            mycursor = mydb.cursor()
+
+            sql = "DELETE FROM files WHERE id = %s"
+            val = (request.form['file_id'],)
+
+            mycursor.execute("SELECT CONCAT(path, '/', filename) as test FROM files WHERE id = %s", val)
+
+            absolutePath = (mycursor.fetchall()[0])[0]
+
+            os.remove(absolutePath)
+            mycursor.execute(sql, val)
+
+            mydb.commit()
+
+            mydb.close()
             return jsonify({'message': 'Image deleted successfully'})
         except OSError:
             return jsonify({'error': 'Image not found'}), 404
@@ -56,7 +105,6 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def file_type(filename):
-    print(filename)
     if (filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGES):
         return '/images'
     elif (filename.rsplit('.', 1)[1].lower() in ALLOWED_DOCUMENTS):
