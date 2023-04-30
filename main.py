@@ -1,7 +1,7 @@
 from flask import *
 from werkzeug.utils import secure_filename
-import json, time, os
-import mysql.connector
+import json, time, random, os, mysql.connector, helpers
+from validation import validateCreationData
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -31,9 +31,7 @@ mycursor.close()
 mydb.close()
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-ALLOWED_IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
-ALLOWED_DOCUMENTS = {'txt', 'pdf'}
+
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
@@ -41,52 +39,64 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    validation = validateCreationData(request)
+    if(validation == True):
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="arlon",
+            password="",
+            database="file_api"
+        )
+        mycursor = mydb.cursor()
+        
+        files = request.files.getlist('files')
 
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="arlon",
-        password="",
-        database="file_api"
-    )
-    mycursor = mydb.cursor()
+        messages = dict()
 
-    if 'files' not in request.files:
-        resp = jsonify({'message' : 'No file part in the request'})
-        resp.status_code = 400
-        return resp
-    
-    files = request.files.getlist('files')
-
-    for file in files:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-
-            folder_type = file_type(filename)
+        for file in files:
             
-            file.save(os.path.join(app.config['UPLOAD_FOLDER']+folder_type, filename))
+            originalFilename = secure_filename(file.filename)
+
+            folder_type = helpers.file_type(originalFilename)
+
+            timestamp = str(int(time.time()))
+            random_number = str(random.randint(1000, 9999))
+
+            filename = timestamp + '_' + random_number + folder_type['ext']
+
+            absolutePath = app.config['UPLOAD_FOLDER']+folder_type['path']
+            
+            file.save(os.path.join(absolutePath, filename))
 
             sql = "INSERT INTO files (post_id,path,filename) VALUES (%s, %s, %s)"
-            val = (request.form['post_id'], app.config['UPLOAD_FOLDER']+folder_type, filename)
+            val = (request.form['post_id'], absolutePath, filename)
 
             mycursor.execute(sql, val)
 
             mydb.commit()
 
+            file_id = mycursor.lastrowid
+
+            messages[file_id] = {
+                'image_id': file_id,
+                'path': absolutePath,
+                'filename': filename,
+                'post_id': request.form['post_id']
+            }
             print("The ID of the last inserted row is:", mycursor.lastrowid)
+        mydb.close()
 
-            success = True
-        else:
-            errors[file.filename] = 'File type is not allowed'
+        response = make_response(jsonify(messages))
+        response.status_code = 200
 
-    mydb.close()
+        return response
+    else:
+        return validation
 
-    return jsonify({'message' : 'it worked'})
-
-@app.route('/delete', methods=['DELETE'])
-def delete_file():
-    print(request.form['file_id'])
-
-    if (request.form['file_id']):
+@app.route('/delete/<file_id>', methods=['DELETE'])
+def delete_file(file_id):
+    print(file_id is not None)
+    if (file_id):
         try:
             mydb = mysql.connector.connect(
                 host="localhost",
@@ -97,7 +107,7 @@ def delete_file():
             mycursor = mydb.cursor()
 
             sql = "DELETE FROM files WHERE id = %s"
-            val = (request.form['file_id'],)
+            val = (file_id,)
 
             mycursor.execute("SELECT CONCAT(path, '/', filename) as test FROM files WHERE id = %s", val)
 
@@ -109,23 +119,15 @@ def delete_file():
             mydb.commit()
 
             mydb.close()
-            return jsonify({'message': 'Image deleted successfully'})
+            return jsonify({'message': 'Image deleted successfully'}), 200
         except OSError:
             return jsonify({'error': 'Image not found'}), 404
+        except:
+            return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
-    return jsonify({'message' : 'it worked'})
+    return jsonify({'error' : 'Missing required parameter: file_id'}), 400
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def file_type(filename):
-    if (filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGES):
-        return '/images'
-    elif (filename.rsplit('.', 1)[1].lower() in ALLOWED_DOCUMENTS):
-        return '/documents'
-    else:
-        return ''
 
 if __name__ == '__main__':
     app.run(debug=True)
