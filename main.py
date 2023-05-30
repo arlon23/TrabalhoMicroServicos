@@ -5,8 +5,8 @@ from validation import validateCreationData
 
 mydb = mysql.connector.connect(
   host="localhost",
-  user="arlon",
-  password="",
+  user="user",
+  password="user",
 )
 
 # Create a cursor object
@@ -43,8 +43,8 @@ def upload_file():
     if(validation == True):
         mydb = mysql.connector.connect(
             host="localhost",
-            user="arlon",
-            password="",
+            user="user",
+            password="user",
             database="file_api"
         )
         mycursor = mydb.cursor()
@@ -92,6 +92,77 @@ def upload_file():
         return response
     else:
         return validation
+    
+
+@app.route('/list/<post_id>', methods=['GET'])
+def list_post(post_id):
+    try:
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="user",
+            password="user",
+            database="file_api"
+        )
+
+        mycursor = mydb.cursor()
+
+        sql = "SELECT * FROM files WHERE files.post_id = %s"
+
+        mycursor.execute(sql, (post_id,))  # Executar a consulta antes de chamar fetchall()
+
+        result = mycursor.fetchall()
+        
+        mydb.close()
+
+        rows = []
+        for row in result:
+            rows.append({
+                'id': row[0],
+                'post_id': row[1],
+                'path': row[2],
+                'file_name': row[3]
+            })
+
+        return jsonify(rows)
+    except:
+        return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
+
+
+@app.route('/list', methods=['GET'])
+def list_all():
+    try:
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="user",
+            password="user",
+            database="file_api"
+        )
+
+        mycursor = mydb.cursor()
+
+        sql = "SELECT * FROM files"
+
+        mycursor.execute(sql)  # Executar a consulta antes de chamar fetchall()
+
+        result = mycursor.fetchall()
+        
+        mydb.close()
+
+        if len(result) == 0:
+            return jsonify({'message': 'A tabela está vazia'})
+
+        rows = []
+        for row in result:
+            rows.append({
+                'id': row[0],
+                'post_id': row[1],
+                'path': row[2],
+                'file_name': row[3]
+            })
+
+        return jsonify(rows)
+    except:
+        return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
 @app.route('/delete/<file_id>', methods=['DELETE'])
 def delete_file(file_id):
@@ -100,8 +171,8 @@ def delete_file(file_id):
         try:
             mydb = mysql.connector.connect(
                 host="localhost",
-                user="arlon",
-                password="",
+                user="user",
+                password="user",
                 database="file_api"
             )
             mycursor = mydb.cursor()
