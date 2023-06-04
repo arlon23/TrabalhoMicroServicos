@@ -1,6 +1,9 @@
 from flask import jsonify, make_response
 import json, helpers
 from werkzeug.utils import secure_filename
+from helpers import BAD_WORDS, file_type
+import PyPDF4
+from io import BytesIO
 # from main import allowed_file
 # from werkzeug.utils import secure_filename
 
@@ -13,8 +16,16 @@ def validateCreationData(request):
         files = request.files.getlist('files')
 
         for file in files:
+
             filename = secure_filename(file.filename)
+            
             if file and helpers.allowed_file(filename):
+                
+                if (badWordsValidation(file) is True):
+                    
+                    errors[filename] = 'File content has bad words'
+                    is_valid = False
+
                 continue
             else:
                 errors[filename] = 'File type is not allowed'
@@ -35,3 +46,42 @@ def validateCreationData(request):
         
     
     return True if is_valid else response
+
+# def pdfContent(file):
+#     # stringVerifier(file.stream.read(), BAD_WORDS)
+#     # file_stream = BytesIO()
+#     # file_stream.write(file.read())
+#     # file_stream.seek(0)
+
+#     # stringVerifier(file.read().decode('utf-8'))
+
+#     content = ""
+
+#     pdf_reader = PyPDF4.PdfFileReader(file)
+
+#     # Iterate over each page in the PDF and extract the text
+#     for page in pdf_reader.pages:
+#         content += page.extractText()
+
+#     # pdfReader = PyPDF4.PdfFileReader(file.stream)
+    
+#     # for pageNumber in range(pdfReader.numPages):
+#     #     pdf_page = pdfReader.getPage(pageNumber)
+#     #     content += pdf_page.extractText()
+#     print(content)
+#     return content
+
+def stringVerifier(text, strings):
+    for word in strings:
+        if word in text:
+            return True
+    return False
+
+# filename - nome do arquivo + extensao
+def badWordsValidation(file):
+    filename = secure_filename(file.filename)
+
+    if (file_type(filename)['ext'] == 'txt'):
+        return True if stringVerifier(file.read().decode('utf-8'), BAD_WORDS) else False
+    
+    return False

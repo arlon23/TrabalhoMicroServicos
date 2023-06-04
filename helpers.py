@@ -1,6 +1,7 @@
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_DOCUMENTS = {'txt', 'pdf'}
+BAD_WORDS = {'porra', 'caralho'}
 
 def allowed_file(filename):
     return '.' in filename and \
