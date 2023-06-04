@@ -1,7 +1,7 @@
 from flask import *
 from werkzeug.utils import secure_filename
 import json, time, random, os, mysql.connector, helpers
-from validation import validateCreationData
+from validation import badWordsValidation, validateCreationData
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -54,7 +54,7 @@ def upload_file():
         messages = dict()
 
         for file in files:
-            
+
             originalFilename = secure_filename(file.filename)
 
             folder_type = helpers.file_type(originalFilename)
@@ -62,7 +62,7 @@ def upload_file():
             timestamp = str(int(time.time()))
             random_number = str(random.randint(1000, 9999))
 
-            filename = timestamp + '_' + random_number + folder_type['ext']
+            filename = timestamp + '_' + random_number + "." + folder_type['ext']
 
             absolutePath = app.config['UPLOAD_FOLDER']+folder_type['path']
             
