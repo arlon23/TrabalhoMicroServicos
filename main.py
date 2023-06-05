@@ -1,7 +1,8 @@
-from flask import *
+from flask import Flask, jsonify, make_response, request
 from werkzeug.utils import secure_filename
 import json, time, random, os, mysql.connector, helpers
 from validation import badWordsValidation, validateCreationData
+from flasgger import Swagger, swag_from
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -32,12 +33,17 @@ mydb.close()
 
 UPLOAD_FOLDER = 'uploads'
 
-
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+swagger = Swagger(app)
+swagger.title = "Microservices Files API"
+swagger.description = "Descrição da minha API"
+swagger.version = "1.0"
+
 @app.route('/upload', methods=['POST'])
+@swag_from('swagger_definitions/microservices_files_api_definition.yml')
 def upload_file():
     validation = validateCreationData(request)
     if(validation == True):
@@ -78,7 +84,7 @@ def upload_file():
             file_id = mycursor.lastrowid
 
             messages[file_id] = {
-                'image_id': file_id,
+                'file_id': file_id,
                 'path': absolutePath,
                 'filename': filename,
                 'post_id': request.form['post_id']
@@ -93,8 +99,8 @@ def upload_file():
     else:
         return validation
     
-
 @app.route('/list/<post_id>', methods=['GET'])
+@swag_from('swagger_definitions/microservices_files_api_definition.yml')
 def list_post(post_id):
     try:
         mydb = mysql.connector.connect(
@@ -127,8 +133,8 @@ def list_post(post_id):
     except:
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
-
 @app.route('/list', methods=['GET'])
+@swag_from('swagger_definitions/microservices_files_api_definition.yml')
 def list_all():
     try:
         mydb = mysql.connector.connect(
@@ -165,6 +171,7 @@ def list_all():
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
 @app.route('/delete/<file_id>', methods=['DELETE'])
+@swag_from('swagger_definitions/delete_file.yml')
 def delete_file(file_id):
     print(file_id is not None)
     if (file_id):
@@ -197,8 +204,6 @@ def delete_file(file_id):
             return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
     return jsonify({'error' : 'Missing required parameter: file_id'}), 400
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)

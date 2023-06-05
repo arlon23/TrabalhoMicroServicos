@@ -1,0 +1,125 @@
+swagger: '2.0'
+info:
+  title: Microservices Files API
+  description: Descrição da API
+  version: 1.0.0
+paths:
+  /upload:
+    post:
+      summary: Salva um arquivo no servidor
+      responses:
+        200:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                image_id:
+                  type: integer
+                  description: ID da imagem
+                path:
+                  type: string
+                  description: Caminho absoluto para o arquivo
+                filename:
+                  type: string
+                  description: Nome do arquivo
+                post_id:
+                  type: integer
+                  description: ID da postagem
+          examples:
+            application/json:
+              example1:
+                id: 1
+                name: João
+                email: joao@example.com
+              example2:
+                id: 2
+                name: Maria
+                email: maria@example.com
+        400:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                files:
+                  type: string
+                  description: This is a required field | It must be a file
+                post_id:
+                  type: integer
+                  description: This is a required field
+  /list/{post_id}:
+    get:
+      summary: Retorna uma lista de arquivos
+      parameters:
+          - name: post_id
+            in: path
+            type: integer
+            required: true
+            description: Post ID
+      responses:
+        200:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: ID do arquivo
+                post_id:
+                  type: integer
+                  description: ID da postagem
+                path:
+                  type: string
+                  description: Caminho absoluto para o arquivo
+                file_name:
+                  type: string
+                  description: Nome do arquivo
+        500:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  description: Something went wrong, please contact admin support
+  /list:
+    get:
+      summary: Retorna uma lista de arquivos
+      parameters:
+          - name: post_id
+            in: path
+            type: integer
+            required: true
+            description: Post ID
+      responses:
+        200:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: ID do arquivo
+                post_id:
+                  type: integer
+                  description: ID da postagem
+                path:
+                  type: string
+                  description: Caminho absoluto para o arquivo
+                file_name:
+                  type: string
+                  description: Nome do arquivo
+        
+        500:
+          description: Successful
+          schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  description: Something went wrong, please contact admin support
+
+
+# 'id': row[0],
+# 'post_id': row[1],
+# 'path': row[2],
+# 'file_name': row[3]
