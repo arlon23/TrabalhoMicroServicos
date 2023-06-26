@@ -38,12 +38,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 swagger = Swagger(app)
-swagger.title = "Microservices Files API"
-swagger.description = "Descrição da minha API"
-swagger.version = "1.0"
+# swagger.title = "Microservices Files API"
+# swagger.description = "Descrição da minha API"
+# swagger.version = "1.0"
 
 @app.route('/upload', methods=['POST'])
-@swag_from('swagger_definitions/microservices_files_api_definition.yml')
+@swag_from('swagger_definitions/File_API.yml')
 def upload_file():
     validation = validateCreationData(request)
     if(validation == True):
@@ -100,7 +100,7 @@ def upload_file():
         return validation
     
 @app.route('/list/<post_id>', methods=['GET'])
-@swag_from('swagger_definitions/microservices_files_api_definition.yml')
+@swag_from('swagger_definitions/File_API.yml')
 def list_post(post_id):
     try:
         mydb = mysql.connector.connect(
@@ -134,7 +134,7 @@ def list_post(post_id):
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
 @app.route('/list', methods=['GET'])
-@swag_from('swagger_definitions/microservices_files_api_definition.yml')
+@swag_from('swagger_definitions/File_API.yml')
 def list_all():
     try:
         mydb = mysql.connector.connect(
@@ -171,7 +171,7 @@ def list_all():
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
 @app.route('/delete/<file_id>', methods=['DELETE'])
-@swag_from('swagger_definitions/delete_file.yml')
+@swag_from('swagger_definitions/File_API.yml')
 def delete_file(file_id):
     print(file_id is not None)
     if (file_id):

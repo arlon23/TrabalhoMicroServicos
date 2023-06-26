@@ -19,7 +19,7 @@ paths:
       tags: []
       responses:
         '200':
-          description: User Found
+          description: Successful
           schema:
             type: array
             items:
@@ -40,12 +40,12 @@ paths:
                   path: uploads/documents
                   post_id: 123
           examples:
-            example-1:
+            example-200-1:
               - file_name: 1685907898_5274.txt
                 id: 1
                 path: uploads/documents
                 post_id: 123
-            example-2:
+            example-200-2:
               message: A tabela está vazia
         '500':
           description: Internal Server Error
@@ -58,10 +58,10 @@ paths:
               example-1:
                 error: 'Something went wrong, please contact admin support'
           examples:
-            example-1:
+            example-500:
               error: 'Something went wrong, please contact admin support'
       operationId: get-all-files
-      description: ''
+      description: Returns a list of all files saved in the database or a message indicating that the list is empty.
   '/list/{post_id}':
     parameters:
       - type: number
@@ -74,7 +74,7 @@ paths:
       tags: []
       responses:
         '200':
-          description: User Found
+          description: Successful
           schema:
             type: array
             items:
@@ -95,12 +95,12 @@ paths:
                   path: uploads/documents
                   post_id: 123
           examples:
-            example-1:
+            example-200-1:
               - file_name: 1685907898_5274.txt
                 id: 1
                 path: uploads/documents
                 post_id: 123
-            example-2:
+            example-200-2:
               message: A tabela está vazia
         '500':
           description: Internal Server Error
@@ -113,7 +113,7 @@ paths:
               example-1:
                 error: 'Something went wrong, please contact admin support'
           examples:
-            example-1:
+            example-500:
               error: 'Something went wrong, please contact admin support'
         '':
           schema:
@@ -136,52 +136,80 @@ paths:
                   path: uploads/documents
                   post_id: 123
       operationId: get-file-by-post-id
-      description: ''
-  /user:
+      description: Returns the list of files attached to a post.
+  /upload:
     post:
       summary: Create New User
       operationId: upload-file
       responses:
         '200':
-          description: User Created
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Missing Required Information
-          schema:
-            type: 'null'
-        '409':
-          description: Email Already Taken
-          schema:
-            type: 'null'
-      description: ''
-      parameters:
-        - in: body
-          name: body
+          description: Successful
           schema:
             type: object
             properties:
-              firstName:
+              '32':
+                type: object
+                properties:
+                  file_id:
+                    type: integer
+                  filename:
+                    type: string
+                  path:
+                    type: string
+                  post_id:
+                    type: string
+            x-examples:
+              example-1:
+                '32':
+                  file_id: 32
+                  filename: 1687803337_6488.txt
+                  path: uploads/documents
+                  post_id: '345'
+          examples:
+            example-200:
+              '32':
+                file_id: 32
+                filename: 1687803337_6488.txt
+                path: uploads/documents
+                post_id: '345'
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            x-examples:
+              example-1:
+                txt_com_palavrao.txt: File content has bad words
+            properties:
+              filename.extension:
                 type: string
-              lastName:
+              post_id:
                 type: string
-              email:
+              files:
                 type: string
-              dateOfBirth:
-                type: string
-                format: date
-            required:
-              - firstName
-              - lastName
-              - email
-              - dateOfBirth
-          description: Post the necessary fields for the API to create a new user.
-          x-examples:
-            Create User Bob Fellow:
-              firstName: Bob
-              lastName: Fellow
-              email: bob.fellow@gmail.com
-              dateOfBirth: '1996-08-24'
+          examples:
+            example-400-1:
+              fileWithBadWord.txt: File content has bad words
+            example-400-2:
+              filename.invalidExtension: File type is not allowed
+            example-400-3:
+              post_id: This is a required field
+            example-400-4:
+              files: This is a required field
+            example-400-5:
+              files: It must be a file
+      description: Attach files to a post based on the Post Id.
+      parameters:
+        - in: formData
+          type: array
+          name: files
+          description: File list
+          required: true
+        - in: formData
+          type: number
+          name: post_id
+          description: Post ID
+          required: true
+    parameters: []
   '/delete/{file_id}':
     parameters:
       - type: string
@@ -194,7 +222,7 @@ paths:
       operationId: delete-file-by-id
       responses:
         '200':
-          description: OK
+          description: Successful
           schema:
             type: object
             properties:
@@ -204,8 +232,8 @@ paths:
               example-1:
                 message: Image deleted successfully
           examples:
-            example-1:
-              message: Image deleted successfully
+            example-200:
+              message: File deleted successfully
         '400':
           description: Bad Request
           schema:
@@ -217,7 +245,7 @@ paths:
               example-1:
                 error: Image not found
           examples:
-            example-1:
+            example-400:
               error: 'Missing required parameter: file_id'
         '404':
           description: Not Found
@@ -225,8 +253,8 @@ paths:
             type: object
             properties: {}
           examples:
-            example-1:
-              error: Image not found
+            example-404:
+              error: File not found
         '500':
           description: Internal Server Error
           schema:
@@ -238,6 +266,7 @@ paths:
               example-1:
                 error: Image not found
           examples:
-            example-1:
+            example-500:
               error: 'Something went wrong, please contact admin support'
+      description: Deletes a file attached to a post based on its Id.
 definitions: {}
