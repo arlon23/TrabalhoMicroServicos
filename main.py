@@ -6,6 +6,7 @@ from flasgger import Swagger, swag_from
 from flask import Flask
 from flask_swagger import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_cors import CORS
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -37,6 +38,7 @@ mydb.close()
 UPLOAD_FOLDER = 'uploads'
 
 app = Flask(__name__)
+CORS(app, origins='http://localhost:5000', methods=['GET', 'POST', 'DELETE'], expose_headers={'Access-Control-Allow-Origin': 'http://localhost:5000'})
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.static_folder = 'swagger'
@@ -46,14 +48,15 @@ swagger = Swagger(app)
 # swagger.description = "Descrição da minha API"
 # swagger.version = "1.0"
 
-SWAGGER_URL = '/swagger/'
-API_URL = '/swagger/File_API.yml'
+SWAGGER_URL = '/swagger'
+API_URL = 'localhost:5000/swagger/templates/File_API.yml'
 
-@app.route('/swagger/')
+@app.route('/swagger')
 def swagger_ui():
     swagger_ui_blueprint = get_swaggerui_blueprint(
         SWAGGER_URL,  # URL base para o Swagger JSON
-        API_URL  # Caminho para o arquivo YAML da documentação
+        API_URL,  # Caminho para o arquivo YAML da documentação
+        config={'app_name': "File API"}
     )
     return render_template('File_API.yml', swagger_ui_blueprint=swagger_ui_blueprint)
 
