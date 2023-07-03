@@ -5,3 +5,4 @@ Flask==2.3.1
 pyngrok==6.0.0
 Werkzeug==2.3.2
 mysql-connector-python
+requests
