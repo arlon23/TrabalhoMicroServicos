@@ -12,56 +12,6 @@ produces:
 consumes:
   - application/json
 paths:
-  /list:
-    parameters: []
-    get:
-      summary: Get User Info by User ID
-      tags: []
-      responses:
-        '200':
-          description: Successful
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                file_name:
-                  type: string
-                id:
-                  type: integer
-                path:
-                  type: string
-                post_id:
-                  type: integer
-            x-examples:
-              example-1:
-                - file_name: 1685907898_5274txt
-                  id: 1
-                  path: uploads/documents
-                  post_id: 123
-          examples:
-            example-200-1:
-              - file_name: 1685907898_5274.txt
-                id: 1
-                path: uploads/documents
-                post_id: 123
-            example-200-2:
-              message: A tabela está vazia
-        '500':
-          description: Internal Server Error
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-            x-examples:
-              example-1:
-                error: 'Something went wrong, please contact admin support'
-          examples:
-            example-500:
-              error: 'Something went wrong, please contact admin support'
-      operationId: get-all-files
-      description: Returns a list of all files saved in the database or a message indicating that the list is empty.
   '/list/{post_id}':
     parameters:
       - type: number
@@ -76,32 +26,39 @@ paths:
         '200':
           description: Successful
           schema:
-            type: array
-            items:
-              type: object
-              properties:
-                file_name:
-                  type: string
-                id:
-                  type: integer
-                path:
-                  type: string
-                post_id:
-                  type: integer
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    file_name:
+                      type: string
+                    id:
+                      type: integer
+                    path:
+                      type: string
+                    post_id:
+                      type: integer
             x-examples:
               example-1:
+                data:
+                  - file_name: 1685907898_5274.txt
+                    id: 1
+                    path: uploads/documents
+                    post_id: 123
+          examples:
+            example-200-1:
+              data:
                 - file_name: 1685907898_5274.txt
                   id: 1
                   path: uploads/documents
                   post_id: 123
-          examples:
-            example-200-1:
-              - file_name: 1685907898_5274.txt
-                id: 1
-                path: uploads/documents
-                post_id: 123
-            example-200-2:
-              message: A tabela está vazia
+                - file_name: 1685907898_5274.txt
+                  id: 1
+                  path: uploads/documents
+                  post_id: 123
         '500':
           description: Internal Server Error
           schema:
@@ -115,63 +72,60 @@ paths:
           examples:
             example-500:
               error: 'Something went wrong, please contact admin support'
-        '':
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                file_name:
-                  type: string
-                id:
-                  type: integer
-                path:
-                  type: string
-                post_id:
-                  type: integer
-            x-examples:
-              example-1:
-                - file_name: 1685907898_5274txt
-                  id: 1
-                  path: uploads/documents
-                  post_id: 123
       operationId: get-file-by-post-id
       description: Returns the list of files attached to a post.
+      parameters:
+        - type: string
+          in: header
+          name: auth_token
+          description: Authentication Token
   /upload:
     post:
       summary: Create New User
       operationId: upload-file
       responses:
-        '200':
+        '201':
           description: Successful
           schema:
             type: object
-            properties:
-              '32':
-                type: object
-                properties:
-                  file_id:
-                    type: integer
-                  filename:
-                    type: string
-                  path:
-                    type: string
-                  post_id:
-                    type: string
             x-examples:
               example-1:
-                '32':
-                  file_id: 32
-                  filename: 1687803337_6488.txt
-                  path: uploads/documents
-                  post_id: '345'
+                data:
+                  - id:
+                      file_name: 1685907898_5274.txt
+                      id: 1
+                      path: uploads/documents
+                      post_id: 123
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '{id}':
+                      type: object
+                      properties:
+                        file_name:
+                          type: string
+                        id:
+                          type: integer
+                        path:
+                          type: string
+                        post_id:
+                          type: integer
           examples:
-            example-200:
-              '32':
-                file_id: 32
-                filename: 1687803337_6488.txt
-                path: uploads/documents
-                post_id: '345'
+            example-201:
+              data:
+                - '1':
+                    file_name: 1685907898_5274.txt
+                    id: 1
+                    path: uploads/documents
+                    post_id: 123
+                - '2':
+                    file_name: 1685907898_5274.txt
+                    id: 2
+                    path: uploads/documents
+                    post_id: 123
         '400':
           description: Bad Request
           schema:
@@ -198,17 +152,25 @@ paths:
             example-400-5:
               files: It must be a file
       description: Attach files to a post based on the Post Id.
+      consumes:
+        - multipart/form-data
       parameters:
         - in: formData
           type: array
           name: files
           description: File list
+          items:
+            type: number
           required: true
         - in: formData
           type: number
           name: post_id
           description: Post ID
           required: true
+        - type: string
+          in: header
+          description: Authentication Token
+          name: auth_token
     parameters: []
   '/delete/{file_id}':
     parameters:
@@ -269,4 +231,9 @@ paths:
             example-500:
               error: 'Something went wrong, please contact admin support'
       description: Deletes a file attached to a post based on its Id.
+      parameters:
+        - type: string
+          in: header
+          name: auth_token
+          description: Authentication Token
 definitions: {}

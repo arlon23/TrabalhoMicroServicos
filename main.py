@@ -1,8 +1,11 @@
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, render_template
 from werkzeug.utils import secure_filename
 import json, time, random, os, mysql.connector, helpers
 from validation import badWordsValidation, validateCreationData
 from flasgger import Swagger, swag_from
+from flask import Flask
+from flask_swagger import swagger
+from flask_swagger_ui import get_swaggerui_blueprint
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -36,14 +39,34 @@ UPLOAD_FOLDER = 'uploads'
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.static_folder = 'swagger'
 
 swagger = Swagger(app)
 # swagger.title = "Microservices Files API"
 # swagger.description = "Descrição da minha API"
 # swagger.version = "1.0"
 
+SWAGGER_URL = '/swagger/'
+API_URL = '/swagger/File_API.yml'
+
+@app.route('/swagger/')
+def swagger_ui():
+    swagger_ui_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,  # URL base para o Swagger JSON
+        API_URL  # Caminho para o arquivo YAML da documentação
+    )
+    return render_template('File_API.yml', swagger_ui_blueprint=swagger_ui_blueprint)
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={'app_name': "File API"}
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+
 @app.route('/upload', methods=['POST'])
-@swag_from('swagger_definitions/File_API.yml')
+@swag_from('swagger/File_API.yml')
 def upload_file():
     validation = validateCreationData(request)
     if(validation == True):
@@ -100,7 +123,7 @@ def upload_file():
         return validation
     
 @app.route('/list/<post_id>', methods=['GET'])
-@swag_from('swagger_definitions/File_API.yml')
+@swag_from('swagger/File_API.yml')
 def list_post(post_id):
     try:
         mydb = mysql.connector.connect(
@@ -133,45 +156,45 @@ def list_post(post_id):
     except:
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
-@app.route('/list', methods=['GET'])
-@swag_from('swagger_definitions/File_API.yml')
-def list_all():
-    try:
-        mydb = mysql.connector.connect(
-            host="localhost",
-            user="user",
-            password="user",
-            database="file_api"
-        )
+# @app.route('/list', methods=['GET'])
+# @swag_from('swagger/File_API.yml')
+# def list_all():
+#     try:
+#         mydb = mysql.connector.connect(
+#             host="localhost",
+#             user="user",
+#             password="user",
+#             database="file_api"
+#         )
 
-        mycursor = mydb.cursor()
+#         mycursor = mydb.cursor()
 
-        sql = "SELECT * FROM files"
+#         sql = "SELECT * FROM files"
 
-        mycursor.execute(sql)  # Executar a consulta antes de chamar fetchall()
+#         mycursor.execute(sql)  # Executar a consulta antes de chamar fetchall()
 
-        result = mycursor.fetchall()
+#         result = mycursor.fetchall()
         
-        mydb.close()
+#         mydb.close()
 
-        if len(result) == 0:
-            return jsonify({'message': 'A tabela está vazia'})
+#         if len(result) == 0:
+#             return jsonify({'message': 'A tabela está vazia'})
 
-        rows = []
-        for row in result:
-            rows.append({
-                'id': row[0],
-                'post_id': row[1],
-                'path': row[2],
-                'file_name': row[3]
-            })
+#         rows = []
+#         for row in result:
+#             rows.append({
+#                 'id': row[0],
+#                 'post_id': row[1],
+#                 'path': row[2],
+#                 'file_name': row[3]
+#             })
 
-        return jsonify(rows)
-    except:
-        return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
+#         return jsonify(rows)
+#     except:
+#         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
 @app.route('/delete/<file_id>', methods=['DELETE'])
-@swag_from('swagger_definitions/File_API.yml')
+@swag_from('swagger/File_API.yml')
 def delete_file(file_id):
     print(file_id is not None)
     if (file_id):

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Documentação Swagger</title>
+    {{ swagger_ui_blueprint }}
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                url: '/swagger/swagger.json',  // URL para o arquivo JSON da documentação
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [SwaggerUIBundle.presets.apis],
+                plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+            });
+            window.ui = ui;
+        };
+    </script>
+</body>
+</html>
