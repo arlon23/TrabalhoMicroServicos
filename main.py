@@ -38,38 +38,38 @@ mydb.close()
 UPLOAD_FOLDER = 'uploads'
 
 app = Flask(__name__)
-CORS(app, origins='http://localhost:5000', methods=['GET', 'POST', 'DELETE'], expose_headers={'Access-Control-Allow-Origin': 'http://localhost:5000'})
+# CORS(app, origins='http://localhost:5000', methods=['GET', 'POST', 'DELETE'])
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.static_folder = 'swagger'
+# app.static_folder = 'swagger'
 
-swagger = Swagger(app)
+# swagger = Swagger(app)
 # swagger.title = "Microservices Files API"
 # swagger.description = "Descrição da minha API"
 # swagger.version = "1.0"
 
-SWAGGER_URL = '/swagger'
-API_URL = 'localhost:5000/swagger/templates/File_API.yml'
+# SWAGGER_URL = '/swagger'
+# API_URL = 'localhost:5000/swagger/templates/File_API.yml'
 
-@app.route('/swagger')
-def swagger_ui():
-    swagger_ui_blueprint = get_swaggerui_blueprint(
-        SWAGGER_URL,  # URL base para o Swagger JSON
-        API_URL,  # Caminho para o arquivo YAML da documentação
-        config={'app_name': "File API"}
-    )
-    return render_template('File_API.yml', swagger_ui_blueprint=swagger_ui_blueprint)
+# @app.route('/swagger')
+# def swagger_ui():
+#     swagger_ui_blueprint = get_swaggerui_blueprint(
+#         SWAGGER_URL,  # URL base para o Swagger JSON
+#         API_URL,  # Caminho para o arquivo YAML da documentação
+#         config={'app_name': "File API"}
+#     )
+#     return render_template('File_API.yml', swagger_ui_blueprint=swagger_ui_blueprint)
 
-swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={'app_name': "File API"}
-)
-app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+# swaggerui_blueprint = get_swaggerui_blueprint(
+#     SWAGGER_URL,
+#     API_URL,
+#     config={'app_name': "File API"}
+# )
+# app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 
-@app.route('/upload', methods=['POST'])
-@swag_from('swagger/File_API.yml')
+# @app.route('/upload', methods=['POST'])
+# @swag_from('swagger/File_API.yml')
 def upload_file():
     validation = validateCreationData(request)
     if(validation == True):
@@ -125,8 +125,8 @@ def upload_file():
     else:
         return validation
     
-@app.route('/list/<post_id>', methods=['GET'])
-@swag_from('swagger/File_API.yml')
+# @app.route('/list/<post_id>', methods=['GET'])
+# @swag_from('swagger/File_API.yml')
 def list_post(post_id):
     try:
         mydb = mysql.connector.connect(
@@ -196,8 +196,8 @@ def list_post(post_id):
 #     except:
 #         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
-@app.route('/delete/<file_id>', methods=['DELETE'])
-@swag_from('swagger/File_API.yml')
+# @app.route('/delete/<file_id>', methods=['DELETE'])
+# @swag_from('swagger/File_API.yml')
 def delete_file(file_id):
     print(file_id is not None)
     if (file_id):
