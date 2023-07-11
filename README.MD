@@ -30,3 +30,7 @@ python3 main.py
 ## Documentação da API
 
 A documentação e definição da API se encontra em `templates/File_API.yml` na raiz do projeto.
+
+## Documentos
+
+Documento com diagramas, caso de uso, etc disponível em: https://docs.google.com/document/d/1vGQDoxq9gM-TpkSV_3-yR-S_vBRkVEQUVHEGacyJqUk/edit?usp=sharing

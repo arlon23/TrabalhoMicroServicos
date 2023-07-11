@@ -2,7 +2,7 @@ from flask import jsonify, make_response
 import json, helpers
 from werkzeug.utils import secure_filename
 from helpers import BAD_WORDS, file_type
-import PyPDF4
+# import PyPDF4
 from io import BytesIO
 # from main import allowed_file
 # from werkzeug.utils import secure_filename
@@ -28,6 +28,7 @@ def validateCreationData(request):
 
                 continue
             else:
+                is_valid = False
                 errors[filename] = 'File type is not allowed'
 
     if 'files' not in request.files:
