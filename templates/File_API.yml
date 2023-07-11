@@ -105,14 +105,19 @@ paths:
           schema:
             type: object
             properties:
-              message:
-                type: string
+              data:
+                type: object
+                properties:
+                  message:
+                    type: string
             x-examples:
               example-1:
-                message: File deleted successfully
+                data:
+                  message: File deleted successfully
           examples:
             example-200:
-              message: File deleted successfully
+              data:
+                message: File deleted successfully
         '400':
           description: Bad Request
           schema:
@@ -149,14 +154,19 @@ paths:
           schema:
             type: object
             properties:
-              message:
-                type: string
+              data:
+                type: object
+                properties:
+                  error:
+                    type: string
             x-examples:
               example-1:
-                message: File deleted successfully
+                data:
+                  error: File not found
           examples:
             example-404:
-              message: File deleted successfully
+              data:
+                error: File not found
         '500':
           description: Internal Server Error
           schema:
@@ -287,62 +297,4 @@ paths:
           description: Authentication Token
           name: auth-token
     parameters: []
-    get:
-      summary: Returns all files stored.
-      operationId: get-all-files
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            x-examples:
-              example-1:
-                data:
-                  - file_name: 1685907898_5274.txt
-                    id: 1
-                    path: uploads/documents
-                    post_id: 123
-            properties:
-              data:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    file_name:
-                      type: string
-                    id:
-                      type: integer
-                    path:
-                      type: string
-                    post_id:
-                      type: integer
-              message:
-                type: string
-          examples:
-            example-200-1:
-              data:
-                - file_name: 1685907898_5274.txt
-                  id: 1
-                  path: uploads/documents
-                  post_id: 123
-                - file_name: 1685907898_5274.txt
-                  id: 1
-                  path: uploads/documents
-                  post_id: 123
-            example-200-2:
-              message: A tabela está vazia
-        '500':
-          description: Internal Server Error
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-            x-examples:
-              example-1:
-                error: 'Something went wrong, please contact admin support'
-          examples:
-            example-500:
-              error: 'Something went wrong, please contact admin support'
-      description: Returns all files stored.
 definitions: {}
