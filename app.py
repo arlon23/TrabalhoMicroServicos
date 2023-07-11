@@ -16,19 +16,30 @@ USERS = {"user-2": 2, "user-0": 0}
 USER_KEYS = ["user-2", "user-0"]
 AUTHENTICATION_API_URL="http://localhost:8000"
 
+@app.route('/me', methods=['GET'])
+def test():
+    response = dict()
+    message = dict()
+    message['id'] = 123
+    message['name'] = 'John Doe'
+    message['registration'] = 'ABC123'
+    message['email'] = 'johndoe@example.com'
+    message['email_verified_at'] = ''
+    message['admin'] = True
+    message['created_at'] = '2023-07-01T10:00:00Z'
+    message['updated_at'] = '2023-07-01T12:00:00Z'
+    # response['data'] = message
+    response = make_response(jsonify(message))
+    response.status_code = 200
+    return response
+
 @app.route('/files-api', methods=['POST'])
 def upload_file():
-
-    user = False
     # AUTHENTICATION_API_URL+'/me'
-    authResponse = requests.get('https://google.com', headers={'Authorization': request.headers.get('auth-token')})
-    print(authResponse)
+    authResponse = requests.get('http://127.0.0.1:5000/me')
 
-    if (response.status_code == 200):
-        user = response.json().id
-
-    # if (request.headers.get('auth-token') in USER_KEYS):
-        # user = USERS[request.headers.get('auth-token')]
+    if (authResponse.status_code == 200):
+        user = (authResponse.json())['id']
     else:
         error = dict()
         message = dict()
@@ -84,7 +95,7 @@ def upload_file():
                 'image_id': file_id,
                 'path': absolutePath,
                 'filename': filename,
-                'post_id': request.form['post_id'],
+                'post_id': int(request.form['post_id']),
                 'user_id': user
             })
             
@@ -106,8 +117,11 @@ def upload_file():
 @app.route('/files-api/<post_id>', methods=['GET'])
 def list_post(post_id):
     try:
-        if (request.headers.get('auth-token') in USER_KEYS):
-            user = USERS[request.headers.get('auth-token')]
+        # AUTHENTICATION_API_URL+'/me'
+        authResponse = requests.get('http://127.0.0.1:5000/me')
+
+        if (authResponse.status_code == 200):
+            user = (authResponse.json())['id']
         else:
             error = dict()
             message = dict()
@@ -145,9 +159,11 @@ def list_post(post_id):
 def delete_file(file_id):
     if (file_id is not None):
         try:
-            
-            if (request.headers.get('auth-token') in USER_KEYS):
-                user = USERS[request.headers.get('auth-token')]
+            # AUTHENTICATION_API_URL+'/me'
+            authResponse = requests.get('http://127.0.0.1:5000/me')
+
+            if (authResponse.status_code == 200):
+                user = (authResponse.json())['id']
             else:
                 error = dict()
                 message = dict()
