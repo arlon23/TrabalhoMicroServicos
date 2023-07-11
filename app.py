@@ -3,9 +3,10 @@ from werkzeug.utils import secure_filename
 import json, time, random, os, helpers
 from validation import validateCreationData
 from mysqlHelper import *
+# from flask import Flask, jsonify
+import requests
 
 UPLOAD_FOLDER = 'uploads'
-
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
@@ -13,14 +14,32 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 USERS = {"user-2": 2, "user-0": 0}
 USER_KEYS = ["user-2", "user-0"]
+AUTHENTICATION_API_URL="http://localhost:8000"
 
-# @app.route('/files-api', methods=['GET', 'POST', 'DELETE'])
+@app.route('/me', methods=['GET'])
+def test():
+    response = dict()
+    message = dict()
+    message['id'] = 123
+    message['name'] = 'John Doe'
+    message['registration'] = 'ABC123'
+    message['email'] = 'johndoe@example.com'
+    message['email_verified_at'] = ''
+    message['admin'] = True
+    message['created_at'] = '2023-07-01T10:00:00Z'
+    message['updated_at'] = '2023-07-01T12:00:00Z'
+    # response['data'] = message
+    response = make_response(jsonify(message))
+    response.status_code = 200
+    return response
 
 @app.route('/files-api', methods=['POST'])
 def upload_file():
-    user = False
-    if (request.headers.get('auth-token') in USER_KEYS):
-        user = USERS[request.headers.get('auth-token')]
+    # AUTHENTICATION_API_URL+'/me'
+    authResponse = requests.get('http://127.0.0.1:5000/me')
+
+    if (authResponse.status_code == 200):
+        user = (authResponse.json())['id']
     else:
         error = dict()
         message = dict()
@@ -76,7 +95,7 @@ def upload_file():
                 'image_id': file_id,
                 'path': absolutePath,
                 'filename': filename,
-                'post_id': request.form['post_id'],
+                'post_id': int(request.form['post_id']),
                 'user_id': user
             })
             
@@ -95,12 +114,14 @@ def upload_file():
     else:
         return validation
     
-
 @app.route('/files-api/<post_id>', methods=['GET'])
 def list_post(post_id):
     try:
-        if (request.headers.get('auth-token') in USER_KEYS):
-            user = USERS[request.headers.get('auth-token')]
+        # AUTHENTICATION_API_URL+'/me'
+        authResponse = requests.get('http://127.0.0.1:5000/me')
+
+        if (authResponse.status_code == 200):
+            user = (authResponse.json())['id']
         else:
             error = dict()
             message = dict()
@@ -134,45 +155,15 @@ def list_post(post_id):
     except:
         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
 
-
-@app.route('/files-api', methods=['GET'])
-def list_all():
-    try:
-        mydb = connectDatabase()
-
-        mycursor = mydb.cursor()
-
-        sql = "SELECT * FROM files"
-
-        mycursor.execute(sql)  # Executar a consulta antes de chamar fetchall()
-
-        result = mycursor.fetchall()
-        
-        mydb.close()
-
-        if len(result) == 0:
-            return jsonify({'message': 'A tabela está vazia'})
-
-        rows = []
-        for row in result:
-            rows.append({
-                'id': row[0],
-                'post_id': row[1],
-                'path': row[2],
-                'file_name': row[3]
-            })
-
-        return jsonify(rows)
-    except:
-        return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
-
 @app.route('/files-api/<file_id>', methods=['DELETE'])
 def delete_file(file_id):
     if (file_id is not None):
         try:
-            
-            if (request.headers.get('auth-token') in USER_KEYS):
-                user = USERS[request.headers.get('auth-token')]
+            # AUTHENTICATION_API_URL+'/me'
+            authResponse = requests.get('http://127.0.0.1:5000/me')
+
+            if (authResponse.status_code == 200):
+                user = (authResponse.json())['id']
             else:
                 error = dict()
                 message = dict()
@@ -248,3 +239,34 @@ def delete_file(file_id):
     response = make_response(jsonify(error))
     response.status_code = 400
     return response
+
+# @app.route('/files-api', methods=['GET'])
+# def list_all():
+#     try:
+#         mydb = connectDatabase()
+
+#         mycursor = mydb.cursor()
+
+#         sql = "SELECT * FROM files"
+
+#         mycursor.execute(sql)  # Executar a consulta antes de chamar fetchall()
+
+#         result = mycursor.fetchall()
+        
+#         mydb.close()
+
+#         if len(result) == 0:
+#             return jsonify({'message': 'A tabela está vazia'})
+
+#         rows = []
+#         for row in result:
+#             rows.append({
+#                 'id': row[0],
+#                 'post_id': row[1],
+#                 'path': row[2],
+#                 'file_name': row[3]
+#             })
+
+#         return jsonify(rows)
+#     except:
+#         return jsonify({'error': 'Something went wrong, please contact admin support'}), 500
