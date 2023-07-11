@@ -26,3 +26,7 @@ Vá para o diretório raiz do projeto e execute o comando:
 ```bash
 python3 main.py
 ```
+
+## Documentação da API
+
+A documentação e definição da API se encontra em `templates/File_API.yml` na raiz do projeto.
